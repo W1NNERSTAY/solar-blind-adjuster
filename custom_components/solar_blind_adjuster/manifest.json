@@ -1,12 +1,12 @@
 {
   "domain": "solar_blind_adjuster",
   "name": "Solar Blind Adjuster",
-  "codeowners": [],
+  "codeowners": ["@W1NNERSTAY"],
   "config_flow": true,
   "dependencies": [],
-  "documentation": "https://github.com/yourusername/solar_blind_adjuster",
+  "documentation": "https://github.com/W1NNERSTAY/solar-blind-adjuster",
   "iot_class": "calculated",
-  "issue_tracker": "https://github.com/yourusername/solar_blind_adjuster/issues",
+  "issue_tracker": "https://github.com/W1NNERSTAY/solar-blind-adjuster/issues",
   "requirements": [
     "astral==3.2",
     "pytz==2024.1"

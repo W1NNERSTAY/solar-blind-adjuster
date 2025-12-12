@@ -2,6 +2,8 @@
 
 태양의 실시간 위치를 추적하여 블라인드를 지능적으로 자동 제어하는 HomeAssistant 커스텀 통합 컴포넌트입니다.
 
+[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=YOUR_GITHUB_USERNAME&repository=solar_blind_adjuster&category=integration)
+
 ## 주요 기능
 
 - 🌞 **태양 위치 기반 정밀 제어**: GPS 좌표 기반으로 태양 고도각, 방위각 실시간 계산
@@ -12,7 +14,13 @@
 
 ## 설치 방법
 
-### HACS를 통한 설치 (권장)
+### 원클릭 설치 (HACS 필요)
+
+[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=W1NNERSTAY&repository=solar-blind-adjuster&category=integration)
+
+위 버튼을 클릭하면 HACS를 통해 자동으로 설치됩니다.
+
+### HACS를 통한 수동 설치
 
 1. HACS에서 "Solar Blind Adjuster" 검색
 2. 설치 후 HomeAssistant 재시작
@@ -25,7 +33,13 @@
 
 ## 설정
 
-### UI를 통한 설정
+### 원클릭 설정
+
+[![Open your Home Assistant instance and start setting up a new integration.](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=solar_blind_adjuster)
+
+위 버튼을 클릭하면 바로 설정을 시작할 수 있습니다.
+
+### UI를 통한 수동 설정
 
 1. **설정** > **기기 및 서비스** > **통합** 이동
 2. **+ 통합 추가** 클릭
