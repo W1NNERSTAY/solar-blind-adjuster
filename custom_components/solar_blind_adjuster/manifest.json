@@ -1,0 +1,15 @@
+{
+  "domain": "solar_blind_adjuster",
+  "name": "Solar Blind Adjuster",
+  "codeowners": [],
+  "config_flow": true,
+  "dependencies": [],
+  "documentation": "https://github.com/yourusername/solar_blind_adjuster",
+  "iot_class": "calculated",
+  "issue_tracker": "https://github.com/yourusername/solar_blind_adjuster/issues",
+  "requirements": [
+    "astral==3.2",
+    "pytz==2024.1"
+  ],
+  "version": "0.1.0"
+}

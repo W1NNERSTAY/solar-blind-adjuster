@@ -1,0 +1,70 @@
+# Services for Solar Blind Adjuster
+
+set_strategy:
+  name: Set Strategy
+  description: Change the control strategy
+  fields:
+    entity_id:
+      name: Entity
+      description: Solar Blind Adjuster entity
+      required: true
+      selector:
+        entity:
+          domain: sensor
+    strategy:
+      name: Strategy
+      description: Control strategy to use
+      required: true
+      selector:
+        select:
+          options:
+            - label: "Maximize Light"
+              value: "maximize_light"
+            - label: "Block Light"
+              value: "block_light"
+            - label: "Hybrid"
+              value: "hybrid"
+            - label: "Manual"
+              value: "manual"
+
+refresh_calculation:
+  name: Refresh Calculation
+  description: Manually trigger solar data recalculation
+  fields:
+    entity_id:
+      name: Entity
+      description: Solar Blind Adjuster entity
+      required: true
+      selector:
+        entity:
+          domain: sensor
+
+record_blind_action:
+  name: Record Blind Action
+  description: Record that a blind action was manually taken
+  fields:
+    entity_id:
+      name: Entity
+      description: Solar Blind Adjuster entity
+      required: true
+      selector:
+        entity:
+          domain: sensor
+    position:
+      name: Position
+      description: Blind position (0-100)
+      required: true
+      selector:
+        number:
+          min: 0
+          max: 100
+          mode: slider
+    tilt:
+      name: Tilt
+      description: Blind tilt angle (0-100)
+      required: true
+      selector:
+        number:
+          min: 0
+          max: 100
+          mode: slider
