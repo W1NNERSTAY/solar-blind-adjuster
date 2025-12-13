@@ -48,12 +48,12 @@
 
 #### 1단계: 기본 정보
 - 통합 이름 입력
-- 제어할 블라인드 엔티티 선택
+- 제어할 블라인드 엔티티 선택 (여러 개 선택 가능)
 
 #### 2단계: 위치 정보
 - 위도/경도 (기본값: HomeAssistant 설정값)
 - 고도 (미터 단위)
-- 창문 방향 (0-360°, 0=북쪽)
+- 창문 방향: 동/서/남/북 선택 또는 직접 각도 입력(0-360°, 0=북쪽)
 
 #### 3단계: 제어 전략 선택
 - **Maximize Light**: 태양광 최대 유입
@@ -95,12 +95,15 @@
 - `sensor.{name}_solar_intensity`: 태양광 상대 강도 (%)
 - `sensor.{name}_recommended_position`: 추천 블라인드 위치 (%)
 - `sensor.{name}_recommended_tilt`: 추천 슬랫 각도 (%)
+  - 속성: `controlled_blinds` (현재 제어 대상 블라인드 목록), `should_update` (동작 필요 여부)
 
 ### 바이너리 센서 (Binary Sensor)
 - `binary_sensor.{name}_sun_facing`: 창문 직사광 여부
+  - 속성: `controlled_blinds` 포함
 
 ### 스위치 (Switch)
 - `switch.{name}_manual_mode`: 수동 모드 토글
+  - 속성: `controlled_blinds` 포함
 
 ### 센서 속성 (Attributes)
 모든 센서는 다음 속성을 포함합니다:
@@ -111,6 +114,7 @@
 - `current_strategy`: 현재 적용 전략
 - `manual_override`: 수동 모드 활성화 여부
 - `window_azimuth`: 창문 방향
+ - `controlled_blinds`: 제어 대상 블라인드 목록
 
 ## 자동화 예제
 
@@ -205,6 +209,20 @@ target:
 data:
   position: 75
   tilt: 60
+```
+
+### solar_blind_adjuster.run_simulation
+특정 날짜/시간 구간에 대해 추천 값을 시뮬레이션합니다. 응답에 각 시각별 추천 position/tilt와 전략이 포함됩니다.
+
+```yaml
+service: solar_blind_adjuster.run_simulation
+target:
+  entity_id: sensor.living_room_sun_altitude
+data:
+  date: 2024-12-15
+  start_time: "08:00"
+  end_time: "12:00"
+  interval_minutes: 30
 ```
 
 ## Lovelace 카드 예제
