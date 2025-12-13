@@ -6,7 +6,7 @@
         "description": "Set up your solar-based blind controller. Enter basic information.",
         "data": {
           "name": "Name",
-          "blind_entity_id": "Blind Entity"
+          "blind_entity_ids": "Blind Entities (one or more covers)"
         }
       },
       "location": {
@@ -16,7 +16,8 @@
           "latitude": "Latitude",
           "longitude": "Longitude",
           "elevation": "Elevation (meters)",
-          "window_azimuth": "Window Direction (0-360°, 0=North)"
+          "window_direction": "Window Facing",
+          "custom_window_azimuth": "Window Direction (custom, 0-360°, 0=North)"
         }
       },
       "strategy": {
@@ -56,8 +57,11 @@
     "step": {
       "init": {
         "title": "Solar Blind Adjuster Options",
-        "description": "Update control strategy",
+        "description": "Update strategy, blinds, or direction",
         "data": {
+          "blind_entity_ids": "Blind Entities",
+          "window_direction": "Window Facing",
+          "custom_window_azimuth": "Window Direction (custom)",
           "strategy": "Strategy"
         }
       }

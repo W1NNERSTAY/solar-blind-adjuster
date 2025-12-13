@@ -17,6 +17,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import (
+    ATTR_CONTROLLED_BLINDS,
     ATTR_CURRENT_STRATEGY,
     ATTR_DAYLIGHT_DURATION,
     ATTR_LAST_ACTION_TIME,
@@ -95,6 +96,8 @@ class SolarBlindAdjusterSensorBase(CoordinatorEntity, SensorEntity):
         if not self.coordinator.data:
             return {}
 
+        blinds = self.coordinator.data.get("blind_entity_ids", [])
+
         attrs = {
             ATTR_SUNRISE: self._format_datetime(self.coordinator.data.get("sunrise")),
             ATTR_SUNSET: self._format_datetime(self.coordinator.data.get("sunset")),
@@ -104,6 +107,7 @@ class SolarBlindAdjusterSensorBase(CoordinatorEntity, SensorEntity):
             ATTR_MANUAL_OVERRIDE: self.coordinator.data.get("manual_override", False),
             ATTR_WINDOW_AZIMUTH: f"{self.coordinator.data.get('window_azimuth', 0)}{UNIT_DEGREES}",
             ATTR_NEXT_UPDATE: self._format_datetime(self.coordinator.data.get("next_update")),
+            ATTR_CONTROLLED_BLINDS: blinds,
         }
 
         # Add last action time if available

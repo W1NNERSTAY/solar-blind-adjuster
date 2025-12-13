@@ -13,8 +13,12 @@ from homeassistant.helpers import selector
 import homeassistant.helpers.config_validation as cv
 
 from .const import (
+    CARDINAL_DIRECTIONS,
     CONF_BLIND_ENTITY_ID,
+    CONF_BLIND_ENTITY_IDS,
     CONF_CHANGE_THRESHOLD,
+    CONF_CUSTOM_AZIMUTH,
+    CONF_DIRECTION_CHOICE,
     CONF_ELEVATION,
     CONF_LATITUDE,
     CONF_LONGITUDE,
@@ -59,25 +63,26 @@ class SolarBlindAdjusterConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         errors = {}
 
         if user_input is not None:
-            # Validate blind entity exists
-            blind_entity = user_input[CONF_BLIND_ENTITY_ID]
-            if not self.hass.states.get(blind_entity):
-                errors[CONF_BLIND_ENTITY_ID] = "entity_not_found"
+            blind_entities = user_input.get(CONF_BLIND_ENTITY_IDS) or []
+            if not blind_entities and user_input.get(CONF_BLIND_ENTITY_ID):
+                blind_entities = [user_input[CONF_BLIND_ENTITY_ID]]
+
+            missing = [entity for entity in blind_entities if not self.hass.states.get(entity)]
+            if missing:
+                errors[CONF_BLIND_ENTITY_IDS] = "entity_not_found"
             else:
                 self.data.update(user_input)
+                self.data[CONF_BLIND_ENTITY_IDS] = blind_entities
                 return await self.async_step_location()
-
-        # Get list of cover entities for selection
-        cover_entities = [
-            entity_id
-            for entity_id in self.hass.states.async_entity_ids("cover")
-        ]
 
         data_schema = vol.Schema(
             {
                 vol.Required(CONF_NAME, default="Solar Blind Adjuster"): str,
-                vol.Required(CONF_BLIND_ENTITY_ID): selector.EntitySelector(
-                    selector.EntitySelectorConfig(domain="cover")
+                vol.Required(CONF_BLIND_ENTITY_IDS): selector.EntitySelector(
+                    selector.EntitySelectorConfig(
+                        domain="cover",
+                        multiple=True,
+                    )
                 ),
             }
         )
@@ -98,6 +103,17 @@ class SolarBlindAdjusterConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         errors = {}
 
         if user_input is not None:
+            direction_choice = user_input.get(CONF_DIRECTION_CHOICE, "custom")
+
+            if direction_choice != "custom":
+                user_input[CONF_WINDOW_AZIMUTH] = CARDINAL_DIRECTIONS.get(direction_choice, 0)
+            else:
+                custom_azimuth = user_input.get(CONF_CUSTOM_AZIMUTH)
+                if custom_azimuth is None:
+                    errors[CONF_CUSTOM_AZIMUTH] = "invalid_azimuth"
+                else:
+                    user_input[CONF_WINDOW_AZIMUTH] = custom_azimuth
+
             # Validate coordinates
             latitude = user_input.get(CONF_LATITUDE, self.hass.config.latitude)
             longitude = user_input.get(CONF_LONGITUDE, self.hass.config.longitude)
@@ -109,8 +125,12 @@ class SolarBlindAdjusterConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             elif not 0 <= user_input[CONF_WINDOW_AZIMUTH] <= 360:
                 errors[CONF_WINDOW_AZIMUTH] = "invalid_azimuth"
             else:
+                user_input.pop(CONF_DIRECTION_CHOICE, None)
+                user_input.pop(CONF_CUSTOM_AZIMUTH, None)
                 self.data.update(user_input)
                 return await self.async_step_strategy()
+
+        current_azimuth = self.data.get(CONF_WINDOW_AZIMUTH, 180)
 
         data_schema = vol.Schema(
             {
@@ -126,10 +146,25 @@ class SolarBlindAdjusterConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     CONF_ELEVATION,
                     default=self.hass.config.elevation or 0,
                 ): int,
-                vol.Required(CONF_WINDOW_AZIMUTH): vol.All(
-                    vol.Coerce(int),
-                    vol.Range(min=0, max=360),
+                vol.Required(
+                    CONF_DIRECTION_CHOICE,
+                    default="custom",
+                ): selector.SelectSelector(
+                    selector.SelectSelectorConfig(
+                        options=[
+                            selector.SelectOptionDict(value="north", label="북 (0°)"),
+                            selector.SelectOptionDict(value="east", label="동 (90°)"),
+                            selector.SelectOptionDict(value="south", label="남 (180°)"),
+                            selector.SelectOptionDict(value="west", label="서 (270°)"),
+                            selector.SelectOptionDict(value="custom", label="직접 입력"),
+                        ],
+                        mode=selector.SelectSelectorMode.DROPDOWN,
+                    )
                 ),
+                vol.Optional(
+                    CONF_CUSTOM_AZIMUTH,
+                    default=current_azimuth,
+                ): vol.All(vol.Coerce(int), vol.Range(min=0, max=360)),
             }
         )
 
@@ -282,12 +317,72 @@ class SolarBlindAdjusterOptionsFlow(config_entries.OptionsFlow):
     ) -> dict[str, Any]:
         """Manage the options."""
         if user_input is not None:
+            # Normalize blinds
+            blind_entities = user_input.get(CONF_BLIND_ENTITY_IDS) or []
+            if not blind_entities and user_input.get(CONF_BLIND_ENTITY_ID):
+                blind_entities = [user_input[CONF_BLIND_ENTITY_ID]]
+            user_input[CONF_BLIND_ENTITY_IDS] = blind_entities
+
+            # Direction handling
+            direction_choice = user_input.get(CONF_DIRECTION_CHOICE, "custom")
+            if direction_choice != "custom":
+                user_input[CONF_WINDOW_AZIMUTH] = CARDINAL_DIRECTIONS.get(direction_choice, 0)
+            else:
+                user_input[CONF_WINDOW_AZIMUTH] = user_input.get(CONF_CUSTOM_AZIMUTH, 0)
+
+            user_input.pop(CONF_DIRECTION_CHOICE, None)
+            user_input.pop(CONF_CUSTOM_AZIMUTH, None)
+
             return self.async_create_entry(title="", data=user_input)
 
         current_strategy = self.config_entry.data.get(CONF_STRATEGY, DEFAULT_STRATEGY)
+        current_blinds = (
+            self.config_entry.options.get(CONF_BLIND_ENTITY_IDS)
+            or self.config_entry.data.get(CONF_BLIND_ENTITY_IDS)
+            or ([self.config_entry.data[CONF_BLIND_ENTITY_ID]] if self.config_entry.data.get(CONF_BLIND_ENTITY_ID) else [])
+        )
+        current_azimuth = self.config_entry.options.get(
+            CONF_WINDOW_AZIMUTH,
+            self.config_entry.data.get(CONF_WINDOW_AZIMUTH, 0),
+        )
+
+        # Guess direction choice from azimuth
+        direction_choice = "custom"
+        for key, deg in CARDINAL_DIRECTIONS.items():
+            if current_azimuth == deg:
+                direction_choice = key
+                break
 
         data_schema = vol.Schema(
             {
+                vol.Optional(
+                    CONF_BLIND_ENTITY_IDS,
+                    default=current_blinds,
+                ): selector.EntitySelector(
+                    selector.EntitySelectorConfig(
+                        domain="cover",
+                        multiple=True,
+                    )
+                ),
+                vol.Optional(
+                    CONF_DIRECTION_CHOICE,
+                    default=direction_choice,
+                ): selector.SelectSelector(
+                    selector.SelectSelectorConfig(
+                        options=[
+                            selector.SelectOptionDict(value="north", label="북 (0°)"),
+                            selector.SelectOptionDict(value="east", label="동 (90°)"),
+                            selector.SelectOptionDict(value="south", label="남 (180°)"),
+                            selector.SelectOptionDict(value="west", label="서 (270°)"),
+                            selector.SelectOptionDict(value="custom", label="직접 입력"),
+                        ],
+                        mode=selector.SelectSelectorMode.DROPDOWN,
+                    )
+                ),
+                vol.Optional(
+                    CONF_CUSTOM_AZIMUTH,
+                    default=current_azimuth,
+                ): vol.All(vol.Coerce(int), vol.Range(min=0, max=360)),
                 vol.Optional(
                     CONF_STRATEGY,
                     default=current_strategy,

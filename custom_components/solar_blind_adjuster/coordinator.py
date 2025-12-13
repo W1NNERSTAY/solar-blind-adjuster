@@ -1,7 +1,7 @@
 """Data update coordinator for Solar Blind Adjuster."""
 from __future__ import annotations
 
-from datetime import datetime, timedelta
+from datetime import date, datetime, time, timedelta
 import logging
 from typing import Any, Optional
 
@@ -10,6 +10,7 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, Upda
 
 from .blind_controller import BlindController, BlindState, WindowConfig
 from .const import (
+    CONF_BLIND_ENTITY_IDS,
     CONF_BLIND_ENTITY_ID,
     CONF_CHANGE_THRESHOLD,
     CONF_ELEVATION,
@@ -64,7 +65,10 @@ class SolarBlindAdjusterCoordinator(DataUpdateCoordinator):
         self.config = config
 
         # Extract configuration
-        self.blind_entity_id = config[CONF_BLIND_ENTITY_ID]
+        blind_entities = config.get(CONF_BLIND_ENTITY_IDS)
+        if not blind_entities and config.get(CONF_BLIND_ENTITY_ID):
+            blind_entities = [config[CONF_BLIND_ENTITY_ID]]
+        self.blind_entity_ids = blind_entities or []
         latitude = config.get(CONF_LATITUDE, hass.config.latitude)
         longitude = config.get(CONF_LONGITUDE, hass.config.longitude)
         elevation = config.get(CONF_ELEVATION, hass.config.elevation or 0)
@@ -129,7 +133,7 @@ class SolarBlindAdjusterCoordinator(DataUpdateCoordinator):
 
         _LOGGER.info(
             "Coordinator initialized for %s (lat: %s, lon: %s, window: %s°)",
-            self.blind_entity_id,
+            ", ".join(self.blind_entity_ids),
             latitude,
             longitude,
             window_azimuth,
@@ -228,6 +232,7 @@ class SolarBlindAdjusterCoordinator(DataUpdateCoordinator):
                 "active_strategy": active_strategy,
                 "manual_override": self.strategy_engine.manual_override,
                 "window_azimuth": self.blind_controller.window_config.azimuth,
+                "blind_entity_ids": self.blind_entity_ids,
                 # Timing
                 "calculation_time": current_time,
                 "next_update": next_update,
@@ -283,3 +288,70 @@ class SolarBlindAdjusterCoordinator(DataUpdateCoordinator):
         """Manually trigger a data refresh."""
         await self.async_request_refresh()
         _LOGGER.info("Manual refresh triggered")
+
+    async def async_run_simulation(
+        self,
+        date_obj: date,
+        start_time: time,
+        end_time: time,
+        interval_minutes: int = 30,
+    ) -> list[dict[str, Any]]:
+        """Run a simulation for a given date and time range.
+
+        Returns a list of snapshots containing sun data and recommendations.
+        """
+        tz = self.solar_calculator.tz
+        start_dt = tz.localize(datetime.combine(date_obj, start_time))
+        end_dt = tz.localize(datetime.combine(date_obj, end_time))
+
+        if end_dt < start_dt:
+            end_dt = end_dt + timedelta(days=1)
+
+        max_steps = 500
+        step_delta = timedelta(minutes=max(interval_minutes, 1))
+        snapshots: list[dict[str, Any]] = []
+        current = start_dt
+        steps = 0
+
+        while current <= end_dt and steps < max_steps:
+            solar_data = await self.hass.async_add_executor_job(
+                self.solar_calculator.get_complete_data,
+                current,
+            )
+
+            is_sun_facing = await self.hass.async_add_executor_job(
+                self.solar_calculator.is_sun_facing_window,
+                self.blind_controller.window_config.azimuth,
+                self.sun_facing_tolerance,
+                self.sun_altitude_threshold,
+                current,
+            )
+
+            recommended_state, _, active_strategy = await self.hass.async_add_executor_job(
+                self.strategy_engine.calculate_recommended_state,
+                solar_data["altitude"],
+                solar_data["azimuth"],
+                is_sun_facing,
+                current,
+            )
+
+            snapshots.append(
+                {
+                    "time": current.isoformat(),
+                    "sun_altitude": solar_data["altitude"],
+                    "sun_azimuth": solar_data["azimuth"],
+                    "solar_intensity": solar_data["solar_intensity"],
+                    "is_sun_facing": is_sun_facing,
+                    "recommended_position": recommended_state.position,
+                    "recommended_tilt": recommended_state.tilt,
+                    "strategy": active_strategy,
+                }
+            )
+
+            current += step_delta
+            steps += 1
+
+        if steps >= max_steps:
+            _LOGGER.warning("Simulation truncated at %s steps", max_steps)
+
+        return snapshots

@@ -6,7 +6,7 @@
         "description": "태양광 기반 블라인드 컨트롤러를 설정합니다. 기본 정보를 입력하세요.",
         "data": {
           "name": "이름",
-          "blind_entity_id": "블라인드 엔티티"
+          "blind_entity_ids": "블라인드 엔티티(여러 개 선택 가능)"
         }
       },
       "location": {
@@ -16,7 +16,8 @@
           "latitude": "위도",
           "longitude": "경도",
           "elevation": "고도 (미터)",
-          "window_azimuth": "창문 방향 (0-360°, 0=북쪽)"
+          "window_direction": "창문 방향 선택",
+          "custom_window_azimuth": "창문 방향 (직접 입력, 0-360°, 0=북쪽)"
         }
       },
       "strategy": {
@@ -56,8 +57,11 @@
     "step": {
       "init": {
         "title": "Solar Blind Adjuster 옵션",
-        "description": "제어 전략 업데이트",
+        "description": "전략, 블라인드, 방향을 수정할 수 있습니다",
         "data": {
+          "blind_entity_ids": "블라인드 엔티티",
+          "window_direction": "창문 방향 선택",
+          "custom_window_azimuth": "창문 방향 (직접 입력)",
           "strategy": "전략"
         }
       }

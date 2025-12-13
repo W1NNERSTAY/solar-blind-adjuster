@@ -7,9 +7,6 @@
   "documentation": "https://github.com/W1NNERSTAY/solar-blind-adjuster",
   "iot_class": "calculated",
   "issue_tracker": "https://github.com/W1NNERSTAY/solar-blind-adjuster/issues",
-  "requirements": [
-    "astral==3.2",
-    "pytz==2024.1"
-  ],
+  "requirements": [],
   "version": "0.1.0"
 }

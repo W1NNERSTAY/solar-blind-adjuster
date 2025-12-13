@@ -11,7 +11,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import DOMAIN
+from .const import ATTR_CONTROLLED_BLINDS, DOMAIN
 from .coordinator import SolarBlindAdjusterCoordinator
 
 _LOGGER = logging.getLogger(__name__)
@@ -83,4 +83,5 @@ class ManualModeSwitch(CoordinatorEntity, SwitchEntity):
         return {
             "active_strategy": self.coordinator.data.get("active_strategy"),
             "last_update": self.coordinator.data.get("calculation_time"),
+            ATTR_CONTROLLED_BLINDS: self.coordinator.data.get("blind_entity_ids", []),
         }

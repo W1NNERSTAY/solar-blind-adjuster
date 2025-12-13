@@ -5,6 +5,7 @@ DOMAIN = "solar_blind_adjuster"
 
 # Configuration keys
 CONF_BLIND_ENTITY_ID = "blind_entity_id"
+CONF_BLIND_ENTITY_IDS = "blind_entity_ids"
 CONF_LATITUDE = "latitude"
 CONF_LONGITUDE = "longitude"
 CONF_ELEVATION = "elevation"
@@ -20,6 +21,8 @@ CONF_SUN_ALTITUDE_THRESHOLD = "sun_altitude_threshold"
 CONF_SUNRISE_ACTION = "sunrise_action"
 CONF_SUNSET_ACTION = "sunset_action"
 CONF_HYBRID_SCHEDULE = "hybrid_schedule"
+CONF_DIRECTION_CHOICE = "window_direction"
+CONF_CUSTOM_AZIMUTH = "custom_window_azimuth"
 
 # Strategy types
 STRATEGY_MAXIMIZE_LIGHT = "maximize_light"
@@ -64,11 +67,13 @@ ATTR_MANUAL_OVERRIDE = "manual_override"
 ATTR_NEXT_UPDATE = "next_update"
 ATTR_WINDOW_AZIMUTH = "window_azimuth"
 ATTR_LAST_ACTION_TIME = "last_action_time"
+ATTR_CONTROLLED_BLINDS = "controlled_blinds"
 
 # Services
 SERVICE_UPDATE_POSITION = "update_position"
 SERVICE_SET_STRATEGY = "set_strategy"
 SERVICE_REFRESH_CALCULATION = "refresh_calculation"
+SERVICE_RUN_SIMULATION = "run_simulation"
 
 # Icons
 ICON_SUN_ALTITUDE = "mdi:angle-acute"
@@ -82,3 +87,11 @@ ICON_SUN_FACING = "mdi:weather-sunny"
 UNIT_DEGREES = "°"
 UNIT_PERCENT = "%"
 UNIT_HOURS = "h"
+
+# Cardinal directions helper (used in config flow)
+CARDINAL_DIRECTIONS = {
+    "north": 0,
+    "east": 90,
+    "south": 180,
+    "west": 270,
+}

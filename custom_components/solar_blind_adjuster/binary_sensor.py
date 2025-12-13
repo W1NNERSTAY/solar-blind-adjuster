@@ -15,6 +15,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import (
+    ATTR_CONTROLLED_BLINDS,
     BINARY_SENSOR_SUN_FACING,
     DOMAIN,
     ICON_SUN_FACING,
@@ -80,4 +81,5 @@ class SunFacingBinarySensor(CoordinatorEntity, BinarySensorEntity):
             "sun_altitude": self.coordinator.data.get("sun_altitude"),
             "sun_azimuth": self.coordinator.data.get("sun_azimuth"),
             "window_azimuth": self.coordinator.data.get("window_azimuth"),
+            ATTR_CONTROLLED_BLINDS: self.coordinator.data.get("blind_entity_ids", []),
         }
