@@ -145,9 +145,13 @@ class SolarBlindAdjusterCoordinator(DataUpdateCoordinator):
         Returns:
             Dictionary with all solar and blind data
         """
-        try:
-            current_time = datetime.now(self.solar_calculator.tz)
+        current_time = datetime.now(self.solar_calculator.tz)
+        return await self._calculate_snapshot(current_time)
 
+    async def _calculate_snapshot(self, current_time: datetime) -> dict[str, Any]:
+        """Calculate a snapshot for a given datetime."""
+        current_time = self._to_tz(current_time, self.solar_calculator.tz)
+        try:
             # Get solar data
             solar_data = await self.hass.async_add_executor_job(
                 self.solar_calculator.get_complete_data,
@@ -314,37 +318,18 @@ class SolarBlindAdjusterCoordinator(DataUpdateCoordinator):
         steps = 0
 
         while current <= end_dt and steps < max_steps:
-            solar_data = await self.hass.async_add_executor_job(
-                self.solar_calculator.get_complete_data,
-                current,
-            )
-
-            is_sun_facing = await self.hass.async_add_executor_job(
-                self.solar_calculator.is_sun_facing_window,
-                self.blind_controller.window_config.azimuth,
-                self.sun_facing_tolerance,
-                self.sun_altitude_threshold,
-                current,
-            )
-
-            recommended_state, _, active_strategy = await self.hass.async_add_executor_job(
-                self.strategy_engine.calculate_recommended_state,
-                solar_data["altitude"],
-                solar_data["azimuth"],
-                is_sun_facing,
-                current,
-            )
+            snapshot = await self._calculate_snapshot(current)
 
             snapshots.append(
                 {
-                    "time": current.isoformat(),
-                    "sun_altitude": solar_data["altitude"],
-                    "sun_azimuth": solar_data["azimuth"],
-                    "solar_intensity": solar_data["solar_intensity"],
-                    "is_sun_facing": is_sun_facing,
-                    "recommended_position": recommended_state.position,
-                    "recommended_tilt": recommended_state.tilt,
-                    "strategy": active_strategy,
+                    "time": snapshot["calculation_time"].isoformat(),
+                    "sun_altitude": snapshot["sun_altitude"],
+                    "sun_azimuth": snapshot["sun_azimuth"],
+                    "solar_intensity": snapshot["solar_intensity"],
+                    "is_sun_facing": snapshot["is_sun_facing"],
+                    "recommended_position": snapshot["recommended_position"],
+                    "recommended_tilt": snapshot["recommended_tilt"],
+                    "strategy": snapshot["active_strategy"],
                 }
             )
 
@@ -355,6 +340,13 @@ class SolarBlindAdjusterCoordinator(DataUpdateCoordinator):
             _LOGGER.warning("Simulation truncated at %s steps", max_steps)
 
         return snapshots
+
+    async def async_preview_time(self, date_obj: date, time_obj: time) -> dict[str, Any]:
+        """Calculate and publish a snapshot for a specific date/time."""
+        target_dt = self._to_tz(datetime.combine(date_obj, time_obj), self.solar_calculator.tz)
+        snapshot = await self._calculate_snapshot(target_dt)
+        self.async_set_updated_data(snapshot)
+        return snapshot
 
     @staticmethod
     def _to_tz(dt_obj: datetime, tzinfo) -> datetime:

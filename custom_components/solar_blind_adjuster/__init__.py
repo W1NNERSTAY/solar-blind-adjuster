@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import logging
-from datetime import time, timedelta
+from datetime import datetime, time, timedelta
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
@@ -17,6 +17,7 @@ from .const import (
     CONF_BLIND_ENTITY_IDS,
     CONF_BLIND_ENTITY_ID,
     DOMAIN,
+    SERVICE_PREVIEW_TIME,
     SERVICE_REFRESH_CALCULATION,
     SERVICE_RUN_SIMULATION,
     SERVICE_SET_STRATEGY,
@@ -108,6 +109,20 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         if call.supports_response:
             return {"results": results, "controlled_blinds": coordinator.blind_entity_ids}
 
+    async def handle_preview(call):
+        coordinator = await _get_coordinator(call.data["entity_id"])
+        date_obj = call.data["date"]
+        time_raw = call.data["time"]
+
+        time_obj = time_raw if isinstance(time_raw, time) else dt_util.parse_time(str(time_raw))
+        if not time_obj:
+            raise ValueError("time must be a valid HH:MM value")
+
+        preview = await coordinator.async_preview_time(date_obj=date_obj, time_obj=time_obj)
+
+        if call.supports_response:
+            return {"preview": preview}
+
     # Register services (once per entry setup)
     if not hass.services.has_service(DOMAIN, SERVICE_SET_STRATEGY):
         hass.services.async_register(
@@ -149,6 +164,21 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                         vol.Coerce(int),
                         vol.Range(min=1, max=240),
                     ),
+                }
+            ),
+            supports_response=SupportsResponse.OPTIONAL,
+        )
+
+    if not hass.services.has_service(DOMAIN, SERVICE_PREVIEW_TIME):
+        hass.services.async_register(
+            DOMAIN,
+            SERVICE_PREVIEW_TIME,
+            handle_preview,
+            schema=vol.Schema(
+                {
+                    vol.Required("entity_id"): str,
+                    vol.Required("date"): vol.Date(),
+                    vol.Required("time"): vol.Any(time, str),
                 }
             ),
             supports_response=SupportsResponse.OPTIONAL,

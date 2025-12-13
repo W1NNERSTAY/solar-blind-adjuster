@@ -109,3 +109,27 @@ run_simulation:
           max: 240
           unit_of_measurement: minutes
           mode: slider
+
+preview_time:
+  name: Preview at Date/Time
+  description: Temporarily update the sensors using a specific date and time
+  fields:
+    entity_id:
+      name: Entity
+      description: Solar Blind Adjuster entity (any of the sensors)
+      required: true
+      selector:
+        entity:
+          domain: sensor
+    date:
+      name: Date
+      description: Preview date
+      required: true
+      selector:
+        date: {}
+    time:
+      name: Time
+      description: Preview time (HH:MM)
+      required: true
+      selector:
+        time: {}

@@ -74,6 +74,7 @@ SERVICE_UPDATE_POSITION = "update_position"
 SERVICE_SET_STRATEGY = "set_strategy"
 SERVICE_REFRESH_CALCULATION = "refresh_calculation"
 SERVICE_RUN_SIMULATION = "run_simulation"
+SERVICE_PREVIEW_TIME = "preview_time"
 
 # Icons
 ICON_SUN_ALTITUDE = "mdi:angle-acute"

@@ -11,6 +11,7 @@
 - 🏠 **HomeAssistant 완벽 통합**: UI 기반 설정, 센서 엔티티, 자동화 지원
 - 🌍 **다국어 지원**: 한국어, 영어
 - ⏰ **일출/일몰 자동화**: 시간대별 자동 제어 및 계절 변화 대응
+- 🧪 **시뮬레이션/미리보기**: 특정 날짜·시간 기준으로 추천 값을 확인
 
 ## 설치 방법
 
@@ -40,6 +41,7 @@
 위 버튼을 클릭하면 바로 설정을 시작할 수 있습니다.
 
 ### UI를 통한 수동 설정
+> 이 통합은 블라인드를 직접 제어하지 않고 추천 값만 제공합니다. 생성되는 센서를 자동화에 연결하면 됩니다.
 
 1. **설정** > **기기 및 서비스** > **통합** 이동
 2. **+ 통합 추가** 클릭
@@ -48,7 +50,6 @@
 
 #### 1단계: 기본 정보
 - 통합 이름 입력
-- 제어할 블라인드 엔티티 선택 (여러 개 선택 가능)
 
 #### 2단계: 위치 정보
 - 위도/경도 (기본값: HomeAssistant 설정값)
@@ -95,15 +96,13 @@
 - `sensor.{name}_solar_intensity`: 태양광 상대 강도 (%)
 - `sensor.{name}_recommended_position`: 추천 블라인드 위치 (%)
 - `sensor.{name}_recommended_tilt`: 추천 슬랫 각도 (%)
-  - 속성: `controlled_blinds` (현재 제어 대상 블라인드 목록), `should_update` (동작 필요 여부)
+  - 속성: `should_update` (동작 필요 여부)
 
 ### 바이너리 센서 (Binary Sensor)
 - `binary_sensor.{name}_sun_facing`: 창문 직사광 여부
-  - 속성: `controlled_blinds` 포함
 
 ### 스위치 (Switch)
 - `switch.{name}_manual_mode`: 수동 모드 토글
-  - 속성: `controlled_blinds` 포함
 
 ### 센서 속성 (Attributes)
 모든 센서는 다음 속성을 포함합니다:
@@ -114,7 +113,6 @@
 - `current_strategy`: 현재 적용 전략
 - `manual_override`: 수동 모드 활성화 여부
 - `window_azimuth`: 창문 방향
- - `controlled_blinds`: 제어 대상 블라인드 목록
 
 ## 자동화 예제
 
@@ -225,6 +223,18 @@ data:
   interval_minutes: 30
 ```
 
+### solar_blind_adjuster.preview_time
+특정 날짜/시간을 기준으로 센서 값을 임시로 갱신해 미리보기 합니다. 다음 주기 업데이트 시 실제 시간으로 다시 계산됩니다.
+
+```yaml
+service: solar_blind_adjuster.preview_time
+target:
+  entity_id: sensor.living_room_sun_altitude
+data:
+  date: 2024-12-15
+  time: "10:30"
+```
+
 ## Lovelace 카드 예제
 
 ```yaml
@@ -260,6 +270,7 @@ cards:
 ## 트러블슈팅
 
 ### 블라인드가 움직이지 않아요
+- 이 통합은 추천 값만 제공합니다. `cover.set_cover_position`/`cover.set_cover_tilt_position` 같은 자동화를 별도로 만들어야 실제 블라인드가 움직입니다.
 - 수동 모드가 활성화되어 있는지 확인하세요
 - `change_threshold` (변화 임계값)이 너무 높게 설정되어 있을 수 있습니다
 - `min_action_interval` (최소 동작 간격)로 인해 대기 중일 수 있습니다
@@ -276,7 +287,7 @@ cards:
 ## 기술 스택
 
 - **천문 계산**: [astral](https://github.com/sffjunkie/astral) - 태양 위치 계산
-- **시간대 처리**: [pytz](https://pythonhosted.org/pytz/) - 타임존 지원
+- **시간대 처리**: Home Assistant `get_time_zone` 유틸 - 캐시된 타임존 지원
 - **플랫폼**: HomeAssistant Custom Component
 
 ## 라이선스

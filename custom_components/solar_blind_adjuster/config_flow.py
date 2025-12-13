@@ -14,8 +14,6 @@ import homeassistant.helpers.config_validation as cv
 
 from .const import (
     CARDINAL_DIRECTIONS,
-    CONF_BLIND_ENTITY_ID,
-    CONF_BLIND_ENTITY_IDS,
     CONF_CHANGE_THRESHOLD,
     CONF_CUSTOM_AZIMUTH,
     CONF_DIRECTION_CHOICE,
@@ -60,37 +58,19 @@ class SolarBlindAdjusterConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         self, user_input: dict[str, Any] | None = None
     ) -> dict[str, Any]:
         """Handle the initial step - basic information."""
-        errors = {}
-
         if user_input is not None:
-            blind_entities = user_input.get(CONF_BLIND_ENTITY_IDS) or []
-            if not blind_entities and user_input.get(CONF_BLIND_ENTITY_ID):
-                blind_entities = [user_input[CONF_BLIND_ENTITY_ID]]
-
-            missing = [entity for entity in blind_entities if not self.hass.states.get(entity)]
-            if missing:
-                errors[CONF_BLIND_ENTITY_IDS] = "entity_not_found"
-            else:
-                self.data.update(user_input)
-                self.data[CONF_BLIND_ENTITY_IDS] = blind_entities
-                return await self.async_step_location()
+            self.data.update(user_input)
+            return await self.async_step_location()
 
         data_schema = vol.Schema(
             {
                 vol.Required(CONF_NAME, default="Solar Blind Adjuster"): str,
-                vol.Required(CONF_BLIND_ENTITY_IDS): selector.EntitySelector(
-                    selector.EntitySelectorConfig(
-                        domain="cover",
-                        multiple=True,
-                    )
-                ),
             }
         )
 
         return self.async_show_form(
             step_id="user",
             data_schema=data_schema,
-            errors=errors,
             description_placeholders={
                 "name": "Solar Blind Adjuster",
             },
@@ -318,12 +298,6 @@ class SolarBlindAdjusterOptionsFlow(config_entries.OptionsFlow):
     ) -> dict[str, Any]:
         """Manage the options."""
         if user_input is not None:
-            # Normalize blinds
-            blind_entities = user_input.get(CONF_BLIND_ENTITY_IDS) or []
-            if not blind_entities and user_input.get(CONF_BLIND_ENTITY_ID):
-                blind_entities = [user_input[CONF_BLIND_ENTITY_ID]]
-            user_input[CONF_BLIND_ENTITY_IDS] = blind_entities
-
             # Direction handling
             direction_choice = user_input.get(CONF_DIRECTION_CHOICE, "custom")
             if direction_choice != "custom":
@@ -349,11 +323,6 @@ class SolarBlindAdjusterOptionsFlow(config_entries.OptionsFlow):
             return self.async_create_entry(title="", data=user_input)
 
         current_strategy = self.config_entry.data.get(CONF_STRATEGY, DEFAULT_STRATEGY)
-        current_blinds = (
-            self.config_entry.options.get(CONF_BLIND_ENTITY_IDS)
-            or self.config_entry.data.get(CONF_BLIND_ENTITY_IDS)
-            or ([self.config_entry.data[CONF_BLIND_ENTITY_ID]] if self.config_entry.data.get(CONF_BLIND_ENTITY_ID) else [])
-        )
         current_azimuth = self.config_entry.options.get(
             CONF_WINDOW_AZIMUTH,
             self.config_entry.data.get(CONF_WINDOW_AZIMUTH, 0),
@@ -402,15 +371,6 @@ class SolarBlindAdjusterOptionsFlow(config_entries.OptionsFlow):
 
         data_schema = vol.Schema(
             {
-                vol.Optional(
-                    CONF_BLIND_ENTITY_IDS,
-                    default=current_blinds,
-                ): selector.EntitySelector(
-                    selector.EntitySelectorConfig(
-                        domain="cover",
-                        multiple=True,
-                    )
-                ),
                 vol.Optional(
                     CONF_DIRECTION_CHOICE,
                     default=direction_choice,
