@@ -81,7 +81,15 @@ class SolarBlindAdjusterSensorBase(CoordinatorEntity, SensorEntity):
         super().__init__(coordinator)
         self._entry = entry
         self._sensor_type = sensor_type
-        self._attr_name = f"{name} {sensor_type.replace('_', ' ').title()}"
+        sensor_kor = {
+            SENSOR_SUN_ALTITUDE: "태양 고도",
+            SENSOR_SUN_AZIMUTH: "태양 방위각",
+            SENSOR_SOLAR_INTENSITY: "일조 강도",
+            SENSOR_RECOMMENDED_POSITION: "추천 위치",
+            SENSOR_RECOMMENDED_TILT: "추천 각도",
+        }.get(sensor_type, sensor_type.replace("_", " ").title())
+
+        self._attr_name = f"{name} {sensor_kor}"
         self._attr_unique_id = f"{entry.entry_id}_{sensor_type}"
         self._attr_device_info = {
             "identifiers": {(DOMAIN, entry.entry_id)},

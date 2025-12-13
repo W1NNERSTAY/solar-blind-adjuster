@@ -53,7 +53,7 @@ class SunFacingBinarySensor(CoordinatorEntity, BinarySensorEntity):
         """Initialize the binary sensor."""
         super().__init__(coordinator)
         self._entry = entry
-        self._attr_name = f"{name} Sun Facing"
+        self._attr_name = f"{name} 직사광 여부"
         self._attr_unique_id = f"{entry.entry_id}_{BINARY_SENSOR_SUN_FACING}"
         self._attr_icon = ICON_SUN_FACING
         self._attr_device_class = BinarySensorDeviceClass.LIGHT
