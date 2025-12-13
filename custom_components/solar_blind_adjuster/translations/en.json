@@ -57,11 +57,20 @@
     "step": {
       "init": {
         "title": "Solar Blind Adjuster Options",
-        "description": "Update strategy, blinds, or direction",
+        "description": "Update strategy, blinds, direction, and advanced options",
         "data": {
           "blind_entity_ids": "Blind Entities",
           "window_direction": "Window Facing",
           "custom_window_azimuth": "Window Direction (custom)",
+          "update_interval": "Update Interval (seconds)",
+          "change_threshold": "Change Threshold (%)",
+          "min_action_interval": "Minimum Action Interval (seconds)",
+          "sun_facing_tolerance": "Sun Facing Tolerance (degrees)",
+          "sun_altitude_threshold": "Minimum Sun Altitude (degrees)",
+          "position_min": "Minimum Position (%)",
+          "position_max": "Maximum Position (%)",
+          "tilt_min": "Minimum Tilt (%)",
+          "tilt_max": "Maximum Tilt (%)",
           "strategy": "Strategy"
         }
       }

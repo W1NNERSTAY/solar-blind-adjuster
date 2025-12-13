@@ -57,11 +57,20 @@
     "step": {
       "init": {
         "title": "Solar Blind Adjuster 옵션",
-        "description": "전략, 블라인드, 방향을 수정할 수 있습니다",
+        "description": "전략, 블라인드, 방향, 고급 옵션을 수정할 수 있습니다",
         "data": {
           "blind_entity_ids": "블라인드 엔티티",
           "window_direction": "창문 방향 선택",
           "custom_window_azimuth": "창문 방향 (직접 입력)",
+          "update_interval": "업데이트 주기 (초)",
+          "change_threshold": "변화 임계값 (%)",
+          "min_action_interval": "최소 동작 간격 (초)",
+          "sun_facing_tolerance": "직사광 허용 각도 (도)",
+          "sun_altitude_threshold": "최소 태양 고도 (도)",
+          "position_min": "최소 위치 (%)",
+          "position_max": "최대 위치 (%)",
+          "tilt_min": "최소 각도 (%)",
+          "tilt_max": "최대 각도 (%)",
           "strategy": "전략"
         }
       }

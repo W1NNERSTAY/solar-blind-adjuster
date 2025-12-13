@@ -333,6 +333,18 @@ class SolarBlindAdjusterOptionsFlow(config_entries.OptionsFlow):
             user_input.pop(CONF_DIRECTION_CHOICE, None)
             user_input.pop(CONF_CUSTOM_AZIMUTH, None)
 
+            # Pack limits
+            if user_input.get("position_min") is not None:
+                user_input[CONF_POSITION_LIMITS] = {
+                    "min": user_input.pop("position_min"),
+                    "max": user_input.pop("position_max"),
+                }
+            if user_input.get("tilt_min") is not None:
+                user_input[CONF_TILT_LIMITS] = {
+                    "min": user_input.pop("tilt_min"),
+                    "max": user_input.pop("tilt_max"),
+                }
+
             return self.async_create_entry(title="", data=user_input)
 
         current_strategy = self.config_entry.data.get(CONF_STRATEGY, DEFAULT_STRATEGY)
@@ -344,6 +356,40 @@ class SolarBlindAdjusterOptionsFlow(config_entries.OptionsFlow):
         current_azimuth = self.config_entry.options.get(
             CONF_WINDOW_AZIMUTH,
             self.config_entry.data.get(CONF_WINDOW_AZIMUTH, 0),
+        )
+        current_position_limits = self.config_entry.options.get(
+            CONF_POSITION_LIMITS,
+            self.config_entry.data.get(
+                CONF_POSITION_LIMITS,
+                {"min": DEFAULT_POSITION_MIN, "max": DEFAULT_POSITION_MAX},
+            ),
+        )
+        current_tilt_limits = self.config_entry.options.get(
+            CONF_TILT_LIMITS,
+            self.config_entry.data.get(
+                CONF_TILT_LIMITS,
+                {"min": DEFAULT_TILT_MIN, "max": DEFAULT_TILT_MAX},
+            ),
+        )
+        current_update_interval = self.config_entry.options.get(
+            CONF_UPDATE_INTERVAL,
+            self.config_entry.data.get(CONF_UPDATE_INTERVAL, DEFAULT_UPDATE_INTERVAL),
+        )
+        current_change_threshold = self.config_entry.options.get(
+            CONF_CHANGE_THRESHOLD,
+            self.config_entry.data.get(CONF_CHANGE_THRESHOLD, DEFAULT_CHANGE_THRESHOLD),
+        )
+        current_min_action_interval = self.config_entry.options.get(
+            CONF_MIN_ACTION_INTERVAL,
+            self.config_entry.data.get(CONF_MIN_ACTION_INTERVAL, DEFAULT_MIN_ACTION_INTERVAL),
+        )
+        current_sun_facing_tolerance = self.config_entry.options.get(
+            CONF_SUN_FACING_TOLERANCE,
+            self.config_entry.data.get(CONF_SUN_FACING_TOLERANCE, DEFAULT_SUN_FACING_TOLERANCE),
+        )
+        current_sun_altitude_threshold = self.config_entry.options.get(
+            CONF_SUN_ALTITUDE_THRESHOLD,
+            self.config_entry.data.get(CONF_SUN_ALTITUDE_THRESHOLD, DEFAULT_SUN_ALTITUDE_THRESHOLD),
         )
 
         # Guess direction choice from azimuth
@@ -383,6 +429,42 @@ class SolarBlindAdjusterOptionsFlow(config_entries.OptionsFlow):
                     CONF_CUSTOM_AZIMUTH,
                     default=current_azimuth,
                 ): vol.All(vol.Coerce(int), vol.Range(min=0, max=360)),
+                vol.Optional(
+                    CONF_UPDATE_INTERVAL,
+                    default=current_update_interval,
+                ): vol.All(vol.Coerce(int), vol.Range(min=60, max=3600)),
+                vol.Optional(
+                    CONF_CHANGE_THRESHOLD,
+                    default=current_change_threshold,
+                ): vol.All(vol.Coerce(int), vol.Range(min=1, max=50)),
+                vol.Optional(
+                    CONF_MIN_ACTION_INTERVAL,
+                    default=current_min_action_interval,
+                ): vol.All(vol.Coerce(int), vol.Range(min=60, max=3600)),
+                vol.Optional(
+                    CONF_SUN_FACING_TOLERANCE,
+                    default=current_sun_facing_tolerance,
+                ): vol.All(vol.Coerce(int), vol.Range(min=15, max=90)),
+                vol.Optional(
+                    CONF_SUN_ALTITUDE_THRESHOLD,
+                    default=current_sun_altitude_threshold,
+                ): vol.All(vol.Coerce(int), vol.Range(min=0, max=45)),
+                vol.Optional(
+                    "position_min",
+                    default=current_position_limits.get("min", DEFAULT_POSITION_MIN),
+                ): vol.All(vol.Coerce(int), vol.Range(min=0, max=100)),
+                vol.Optional(
+                    "position_max",
+                    default=current_position_limits.get("max", DEFAULT_POSITION_MAX),
+                ): vol.All(vol.Coerce(int), vol.Range(min=0, max=100)),
+                vol.Optional(
+                    "tilt_min",
+                    default=current_tilt_limits.get("min", DEFAULT_TILT_MIN),
+                ): vol.All(vol.Coerce(int), vol.Range(min=0, max=100)),
+                vol.Optional(
+                    "tilt_max",
+                    default=current_tilt_limits.get("max", DEFAULT_TILT_MAX),
+                ): vol.All(vol.Coerce(int), vol.Range(min=0, max=100)),
                 vol.Optional(
                     CONF_STRATEGY,
                     default=current_strategy,
