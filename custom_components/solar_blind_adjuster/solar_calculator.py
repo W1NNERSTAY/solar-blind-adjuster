@@ -7,7 +7,7 @@ import math
 
 from astral import LocationInfo
 from astral.sun import sun, elevation, azimuth
-import pytz
+from homeassistant.util.dt import get_time_zone
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -50,7 +50,7 @@ class SolarCalculator:
             longitude=longitude,
         )
 
-        self.tz = pytz.timezone(timezone)
+        self.tz = get_time_zone(timezone) or get_time_zone("UTC")
 
         _LOGGER.debug(
             "Solar calculator initialized: lat=%s, lon=%s, elev=%s, tz=%s",
@@ -72,12 +72,7 @@ class SolarCalculator:
             - azimuth: Sun azimuth angle in degrees (0 to 360, North = 0)
             - is_daylight: Whether the sun is above horizon
         """
-        if dt is None:
-            dt = datetime.now(self.tz)
-        elif dt.tzinfo is None:
-            dt = self.tz.localize(dt)
-        else:
-            dt = dt.astimezone(self.tz)
+        dt = self._ensure_tzaware(dt)
 
         # Calculate sun altitude and azimuth
         sun_altitude = elevation(self.location.observer, dt)
@@ -102,12 +97,7 @@ class SolarCalculator:
             - solar_noon: Solar noon time (sun at highest point)
             - daylight_duration: Hours of daylight
         """
-        if date is None:
-            date = datetime.now(self.tz)
-        elif date.tzinfo is None:
-            date = self.tz.localize(date)
-        else:
-            date = date.astimezone(self.tz)
+        date = self._ensure_tzaware(date)
 
         # Calculate sun times
         s = sun(self.location.observer, date=date.date(), tzinfo=self.tz)
@@ -150,6 +140,14 @@ class SolarCalculator:
         intensity = math.sin(math.radians(altitude)) * 100
 
         return round(max(0, min(100, intensity)), 2)
+
+    def _ensure_tzaware(self, dt: datetime | None) -> datetime:
+        """Return a timezone-aware datetime in configured tz."""
+        if dt is None:
+            return datetime.now(self.tz)
+        if dt.tzinfo is None:
+            return dt.replace(tzinfo=self.tz)
+        return dt.astimezone(self.tz)
 
     def is_sun_facing_window(
         self,
