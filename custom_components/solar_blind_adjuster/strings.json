@@ -1,0 +1,76 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Solar Blind Adjuster Setup",
+        "description": "Set up your solar-based blind controller. Enter basic information.",
+        "data": {
+          "name": "Name"
+        }
+      },
+      "location": {
+        "title": "Location Settings",
+        "description": "Configure location and window direction. Leave latitude/longitude empty to use Home Assistant defaults.",
+        "data": {
+          "latitude": "Latitude",
+          "longitude": "Longitude",
+          "elevation": "Elevation (meters)",
+          "window_direction": "Window Facing",
+          "custom_window_azimuth": "Window Direction (custom, 0-360°, 0=North)"
+        }
+      },
+      "strategy": {
+        "title": "Control Strategy",
+        "description": "Choose how blinds should respond to sunlight.",
+        "data": {
+          "strategy": "Strategy"
+        }
+      },
+      "advanced": {
+        "title": "Advanced Settings",
+        "description": "Optional advanced configuration. You can skip this step.",
+        "data": {
+          "update_interval": "Update Interval (seconds)",
+          "change_threshold": "Change Threshold (%)",
+          "min_action_interval": "Minimum Action Interval (seconds)",
+          "sun_facing_tolerance": "Sun Facing Tolerance (degrees)",
+          "sun_altitude_threshold": "Minimum Sun Altitude (degrees)",
+          "position_min": "Minimum Position (%)",
+          "position_max": "Maximum Position (%)",
+          "tilt_min": "Minimum Tilt (%)",
+          "tilt_max": "Maximum Tilt (%)"
+        }
+      }
+    },
+    "error": {
+      "invalid_latitude": "Latitude must be between -90 and 90",
+      "invalid_longitude": "Longitude must be between -180 and 180",
+      "invalid_azimuth": "Window azimuth must be between 0 and 360"
+    },
+    "abort": {
+      "already_configured": "This device is already configured"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Solar Blind Adjuster Options",
+        "description": "Update strategy, direction, and advanced options",
+        "data": {
+          "window_direction": "Window Facing",
+          "custom_window_azimuth": "Window Direction (custom)",
+          "update_interval": "Update Interval (seconds)",
+          "change_threshold": "Change Threshold (%)",
+          "min_action_interval": "Minimum Action Interval (seconds)",
+          "sun_facing_tolerance": "Sun Facing Tolerance (degrees)",
+          "sun_altitude_threshold": "Minimum Sun Altitude (degrees)",
+          "position_min": "Minimum Position (%)",
+          "position_max": "Maximum Position (%)",
+          "tilt_min": "Minimum Tilt (%)",
+          "tilt_max": "Maximum Tilt (%)",
+          "strategy": "Strategy"
+        }
+      }
+    }
+  }
+}

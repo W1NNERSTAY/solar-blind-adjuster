@@ -1,0 +1,135 @@
+# Services for Solar Blind Adjuster
+
+set_strategy:
+  name: Set Strategy
+  description: Change the control strategy
+  fields:
+    entity_id:
+      name: Entity
+      description: Solar Blind Adjuster entity (any of the sensors)
+      required: true
+      selector:
+        entity:
+          domain: sensor
+    strategy:
+      name: Strategy
+      description: Control strategy to use
+      required: true
+      selector:
+        select:
+          options:
+            - label: "Maximize Light"
+              value: "maximize_light"
+            - label: "Block Light"
+              value: "block_light"
+            - label: "Hybrid"
+              value: "hybrid"
+            - label: "Manual"
+              value: "manual"
+
+refresh_calculation:
+  name: Refresh Calculation
+  description: Manually trigger solar data recalculation
+  fields:
+    entity_id:
+      name: Entity
+      description: Solar Blind Adjuster entity (any of the sensors)
+      required: true
+      selector:
+        entity:
+          domain: sensor
+
+record_blind_action:
+  name: Record Blind Action
+  description: Record that a blind action was manually taken
+  fields:
+    entity_id:
+      name: Entity
+      description: Solar Blind Adjuster entity (any of the sensors)
+      required: true
+      selector:
+        entity:
+          domain: sensor
+    position:
+      name: Position
+      description: Blind position (0-100)
+      required: true
+      selector:
+        number:
+          min: 0
+          max: 100
+          mode: slider
+    tilt:
+      name: Tilt
+      description: Blind tilt angle (0-100)
+      required: true
+      selector:
+        number:
+          min: 0
+          max: 100
+          mode: slider
+
+run_simulation:
+  name: Run Simulation
+  description: Simulate recommendations for a specific date and time range
+  fields:
+    entity_id:
+      name: Entity
+      description: Solar Blind Adjuster entity (any of the sensors)
+      required: true
+      selector:
+        entity:
+          domain: sensor
+    date:
+      name: Date
+      description: Simulation date
+      required: true
+      selector:
+        date: {}
+    start_time:
+      name: Start Time
+      description: Start time (HH:MM)
+      required: true
+      selector:
+        time: {}
+    end_time:
+      name: End Time
+      description: End time (HH:MM)
+      required: true
+      selector:
+        time: {}
+    interval_minutes:
+      name: Interval (minutes)
+      description: Time step between simulation samples
+      default: 30
+      required: false
+      selector:
+        number:
+          min: 1
+          max: 240
+          unit_of_measurement: minutes
+          mode: slider
+
+preview_time:
+  name: Preview at Date/Time
+  description: Temporarily update the sensors using a specific date and time
+  fields:
+    entity_id:
+      name: Entity
+      description: Solar Blind Adjuster entity (any of the sensors)
+      required: true
+      selector:
+        entity:
+          domain: sensor
+    date:
+      name: Date
+      description: Preview date
+      required: true
+      selector:
+        date: {}
+    time:
+      name: Time
+      description: Preview time (HH:MM)
+      required: true
+      selector:
+        time: {}

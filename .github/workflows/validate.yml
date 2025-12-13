@@ -1,0 +1,175 @@
+name: Validate
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  validate:
+    name: Validate Integration
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install astral==3.2 pytz==2024.1
+
+      - name: Validate manifest.json
+        run: |
+          echo "Validating manifest.json..."
+          python3 -c "
+          import json
+          import sys
+
+          with open('custom_components/solar_blind_adjuster/manifest.json', 'r') as f:
+              manifest = json.load(f)
+
+          required_keys = ['domain', 'name', 'documentation', 'issue_tracker', 'version', 'requirements', 'codeowners']
+          missing_keys = [key for key in required_keys if key not in manifest]
+
+          if missing_keys:
+              print(f'❌ Missing required keys in manifest.json: {missing_keys}')
+              sys.exit(1)
+
+          # Validate domain matches directory name
+          if manifest['domain'] != 'solar_blind_adjuster':
+              print(f'❌ Domain mismatch: {manifest[\"domain\"]} != solar_blind_adjuster')
+              sys.exit(1)
+
+          # Validate version format
+          import re
+          if not re.match(r'^\d+\.\d+\.\d+$', manifest['version']):
+              print(f'❌ Invalid version format: {manifest[\"version\"]}')
+              sys.exit(1)
+
+          print('✅ manifest.json is valid')
+          "
+
+      - name: Validate hacs.json
+        run: |
+          echo "Validating hacs.json..."
+          python3 -c "
+          import json
+          import sys
+
+          with open('hacs.json', 'r') as f:
+              hacs = json.load(f)
+
+          required_keys = ['name', 'render_readme']
+          missing_keys = [key for key in required_keys if key not in hacs]
+
+          if missing_keys:
+              print(f'❌ Missing required keys in hacs.json: {missing_keys}')
+              sys.exit(1)
+
+          print('✅ hacs.json is valid')
+          "
+
+      - name: Check file structure
+        run: |
+          echo "Checking file structure..."
+
+          required_files=(
+            "custom_components/solar_blind_adjuster/__init__.py"
+            "custom_components/solar_blind_adjuster/manifest.json"
+            "custom_components/solar_blind_adjuster/config_flow.py"
+            "custom_components/solar_blind_adjuster/const.py"
+            "custom_components/solar_blind_adjuster/coordinator.py"
+            "custom_components/solar_blind_adjuster/sensor.py"
+            "custom_components/solar_blind_adjuster/binary_sensor.py"
+            "custom_components/solar_blind_adjuster/switch.py"
+            "custom_components/solar_blind_adjuster/strings.json"
+            "custom_components/solar_blind_adjuster/services.yaml"
+            "hacs.json"
+            "README.md"
+          )
+
+          missing_files=()
+          for file in "${required_files[@]}"; do
+            if [ ! -f "$file" ]; then
+              missing_files+=("$file")
+            fi
+          done
+
+          if [ ${#missing_files[@]} -ne 0 ]; then
+            echo "❌ Missing required files:"
+            printf '%s\n' "${missing_files[@]}"
+            exit 1
+          fi
+
+          echo "✅ All required files exist"
+
+      - name: Validate Python syntax
+        run: |
+          echo "Validating Python syntax..."
+          python3 -m py_compile custom_components/solar_blind_adjuster/*.py
+          echo "✅ Python syntax is valid"
+
+      - name: Check for common issues
+        run: |
+          echo "Checking for common issues..."
+
+          # Check for print statements (should use logging)
+          if grep -r "print(" custom_components/solar_blind_adjuster/*.py; then
+            echo "⚠️  Warning: Found print() statements. Consider using logging instead."
+          fi
+
+          # Check for TODO/FIXME comments
+          if grep -r "TODO\|FIXME" custom_components/solar_blind_adjuster/*.py; then
+            echo "⚠️  Warning: Found TODO/FIXME comments"
+          fi
+
+          echo "✅ Common issues check complete"
+
+      - name: Validate translations
+        run: |
+          echo "Validating translations..."
+          python3 -c "
+          import json
+          import sys
+
+          # Load base strings
+          with open('custom_components/solar_blind_adjuster/strings.json', 'r') as f:
+              base_strings = json.load(f)
+
+          # Load translations
+          languages = ['en', 'ko']
+          for lang in languages:
+              try:
+                  with open(f'custom_components/solar_blind_adjuster/translations/{lang}.json', 'r') as f:
+                      translation = json.load(f)
+                  print(f'✅ {lang}.json is valid JSON')
+              except Exception as e:
+                  print(f'❌ Error loading {lang}.json: {e}')
+                  sys.exit(1)
+
+          print('✅ All translations are valid')
+          "
+
+  hacs-validation:
+    name: HACS Validation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: HACS Validation
+        uses: hacs/action@main
+        with:
+          category: integration
+          ignore: brands

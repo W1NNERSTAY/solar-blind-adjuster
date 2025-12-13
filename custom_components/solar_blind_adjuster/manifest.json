@@ -1,0 +1,12 @@
+{
+  "domain": "solar_blind_adjuster",
+  "name": "Solar Blind Adjuster",
+  "codeowners": ["@W1NNERSTAY"],
+  "config_flow": true,
+  "dependencies": [],
+  "documentation": "https://github.com/W1NNERSTAY/solar-blind-adjuster",
+  "iot_class": "calculated",
+  "issue_tracker": "https://github.com/W1NNERSTAY/solar-blind-adjuster/issues",
+  "requirements": [],
+  "version": "0.1.0"
+}

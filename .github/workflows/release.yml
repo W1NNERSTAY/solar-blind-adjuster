@@ -1,0 +1,86 @@
+name: Create Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Extract version from tag
+        id: version
+        run: echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+      - name: Verify version in manifest.json
+        run: |
+          MANIFEST_VERSION=$(grep '"version"' custom_components/solar_blind_adjuster/manifest.json | sed 's/.*"version": "\(.*\)".*/\1/')
+          TAG_VERSION="${{ steps.version.outputs.version }}"
+          echo "Manifest version: $MANIFEST_VERSION"
+          echo "Tag version: $TAG_VERSION"
+          if [ "$MANIFEST_VERSION" != "$TAG_VERSION" ]; then
+            echo "Error: Version mismatch! manifest.json has $MANIFEST_VERSION but tag is v$TAG_VERSION"
+            exit 1
+          fi
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          # Get previous tag
+          PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+
+          if [ -z "$PREV_TAG" ]; then
+            echo "## First Release" > CHANGELOG.md
+            echo "" >> CHANGELOG.md
+            echo "Initial release of Solar Blind Adjuster" >> CHANGELOG.md
+          else
+            echo "## Changes since $PREV_TAG" > CHANGELOG.md
+            echo "" >> CHANGELOG.md
+            git log ${PREV_TAG}..HEAD --pretty=format:"- %s (%h)" >> CHANGELOG.md
+          fi
+
+          echo "" >> CHANGELOG.md
+          echo "" >> CHANGELOG.md
+          echo "## Installation" >> CHANGELOG.md
+          echo "" >> CHANGELOG.md
+          echo "### Via HACS (Recommended)" >> CHANGELOG.md
+          echo "" >> CHANGELOG.md
+          echo "[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=W1NNERSTAY&repository=solar-blind-adjuster&category=integration)" >> CHANGELOG.md
+          echo "" >> CHANGELOG.md
+          echo "### Manual Installation" >> CHANGELOG.md
+          echo "" >> CHANGELOG.md
+          echo "1. Download \`solar_blind_adjuster.zip\` from this release" >> CHANGELOG.md
+          echo "2. Extract to your HomeAssistant \`custom_components\` directory" >> CHANGELOG.md
+          echo "3. Restart HomeAssistant" >> CHANGELOG.md
+          echo "4. Add the integration via UI: Settings > Devices & Services > Add Integration > Solar Blind Adjuster" >> CHANGELOG.md
+
+      - name: Create release archive
+        run: |
+          cd custom_components
+          zip -r ../solar_blind_adjuster.zip solar_blind_adjuster/
+          cd ..
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: Release v${{ steps.version.outputs.version }}
+          body_path: CHANGELOG.md
+          files: |
+            solar_blind_adjuster.zip
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update release info
+        run: |
+          echo "✅ Release v${{ steps.version.outputs.version }} created successfully!"
+          echo "📦 Download URL: https://github.com/${{ github.repository }}/releases/download/v${{ steps.version.outputs.version }}/solar_blind_adjuster.zip"

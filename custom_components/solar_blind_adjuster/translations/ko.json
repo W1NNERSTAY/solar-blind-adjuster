@@ -1,0 +1,76 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Solar Blind Adjuster 설정",
+        "description": "태양광 기반 블라인드 컨트롤러를 설정합니다. 기본 정보를 입력하세요.",
+        "data": {
+          "name": "이름"
+        }
+      },
+      "location": {
+        "title": "위치 설정",
+        "description": "위치와 창문 방향을 설정합니다. 위도/경도를 비워두면 Home Assistant 기본값을 사용합니다.",
+        "data": {
+          "latitude": "위도",
+          "longitude": "경도",
+          "elevation": "고도 (미터)",
+          "window_direction": "창문 방향 선택",
+          "custom_window_azimuth": "창문 방향 (직접 입력, 0-360°, 0=북쪽)"
+        }
+      },
+      "strategy": {
+        "title": "제어 전략",
+        "description": "블라인드가 햇빛에 어떻게 반응할지 선택하세요.",
+        "data": {
+          "strategy": "전략"
+        }
+      },
+      "advanced": {
+        "title": "고급 설정",
+        "description": "선택적 고급 설정입니다. 이 단계를 건너뛸 수 있습니다.",
+        "data": {
+          "update_interval": "업데이트 주기 (초)",
+          "change_threshold": "변화 임계값 (%)",
+          "min_action_interval": "최소 동작 간격 (초)",
+          "sun_facing_tolerance": "직사광 허용 각도 (도)",
+          "sun_altitude_threshold": "최소 태양 고도 (도)",
+          "position_min": "최소 위치 (%)",
+          "position_max": "최대 위치 (%)",
+          "tilt_min": "최소 각도 (%)",
+          "tilt_max": "최대 각도 (%)"
+        }
+      }
+    },
+    "error": {
+      "invalid_latitude": "위도는 -90에서 90 사이여야 합니다",
+      "invalid_longitude": "경도는 -180에서 180 사이여야 합니다",
+      "invalid_azimuth": "창문 방향은 0에서 360 사이여야 합니다"
+    },
+    "abort": {
+      "already_configured": "이 장치는 이미 설정되어 있습니다"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Solar Blind Adjuster 옵션",
+        "description": "전략, 방향, 고급 옵션을 수정할 수 있습니다",
+        "data": {
+          "window_direction": "창문 방향 선택",
+          "custom_window_azimuth": "창문 방향 (직접 입력)",
+          "update_interval": "업데이트 주기 (초)",
+          "change_threshold": "변화 임계값 (%)",
+          "min_action_interval": "최소 동작 간격 (초)",
+          "sun_facing_tolerance": "직사광 허용 각도 (도)",
+          "sun_altitude_threshold": "최소 태양 고도 (도)",
+          "position_min": "최소 위치 (%)",
+          "position_max": "최대 위치 (%)",
+          "tilt_min": "최소 각도 (%)",
+          "tilt_max": "최대 각도 (%)",
+          "strategy": "전략"
+        }
+      }
+    }
+  }
+}
