@@ -301,8 +301,8 @@ class SolarBlindAdjusterCoordinator(DataUpdateCoordinator):
         Returns a list of snapshots containing sun data and recommendations.
         """
         tz = self.solar_calculator.tz
-        start_dt = tz.localize(datetime.combine(date_obj, start_time))
-        end_dt = tz.localize(datetime.combine(date_obj, end_time))
+        start_dt = self._to_tz(datetime.combine(date_obj, start_time), tz)
+        end_dt = self._to_tz(datetime.combine(date_obj, end_time), tz)
 
         if end_dt < start_dt:
             end_dt = end_dt + timedelta(days=1)
@@ -355,3 +355,14 @@ class SolarBlindAdjusterCoordinator(DataUpdateCoordinator):
             _LOGGER.warning("Simulation truncated at %s steps", max_steps)
 
         return snapshots
+
+    @staticmethod
+    def _to_tz(dt_obj: datetime, tzinfo) -> datetime:
+        """Return timezone-aware datetime using provided tzinfo."""
+        if dt_obj.tzinfo:
+            return dt_obj.astimezone(tzinfo)
+        # pytz style objects expose localize; zoneinfo/dateutil do not
+        localize = getattr(tzinfo, "localize", None)
+        if callable(localize):
+            return localize(dt_obj)
+        return dt_obj.replace(tzinfo=tzinfo)
