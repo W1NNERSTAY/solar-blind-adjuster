@@ -291,7 +291,7 @@ class SolarBlindAdjusterOptionsFlow(config_entries.OptionsFlow):
     def __init__(self, config_entry: config_entries.ConfigEntry):
         """Initialize options flow."""
         super().__init__()
-        self.config_entry = config_entry
+        self._config_entry = config_entry
 
     async def async_step_init(
         self, user_input: dict[str, Any] | None = None
@@ -322,44 +322,44 @@ class SolarBlindAdjusterOptionsFlow(config_entries.OptionsFlow):
 
             return self.async_create_entry(title="", data=user_input)
 
-        current_strategy = self.config_entry.data.get(CONF_STRATEGY, DEFAULT_STRATEGY)
-        current_azimuth = self.config_entry.options.get(
+        current_strategy = self._config_entry.data.get(CONF_STRATEGY, DEFAULT_STRATEGY)
+        current_azimuth = self._config_entry.options.get(
             CONF_WINDOW_AZIMUTH,
-            self.config_entry.data.get(CONF_WINDOW_AZIMUTH, 0),
+            self._config_entry.data.get(CONF_WINDOW_AZIMUTH, 0),
         )
-        current_position_limits = self.config_entry.options.get(
+        current_position_limits = self._config_entry.options.get(
             CONF_POSITION_LIMITS,
-            self.config_entry.data.get(
+            self._config_entry.data.get(
                 CONF_POSITION_LIMITS,
                 {"min": DEFAULT_POSITION_MIN, "max": DEFAULT_POSITION_MAX},
             ),
         )
-        current_tilt_limits = self.config_entry.options.get(
+        current_tilt_limits = self._config_entry.options.get(
             CONF_TILT_LIMITS,
-            self.config_entry.data.get(
+            self._config_entry.data.get(
                 CONF_TILT_LIMITS,
                 {"min": DEFAULT_TILT_MIN, "max": DEFAULT_TILT_MAX},
             ),
         )
-        current_update_interval = self.config_entry.options.get(
+        current_update_interval = self._config_entry.options.get(
             CONF_UPDATE_INTERVAL,
-            self.config_entry.data.get(CONF_UPDATE_INTERVAL, DEFAULT_UPDATE_INTERVAL),
+            self._config_entry.data.get(CONF_UPDATE_INTERVAL, DEFAULT_UPDATE_INTERVAL),
         )
-        current_change_threshold = self.config_entry.options.get(
+        current_change_threshold = self._config_entry.options.get(
             CONF_CHANGE_THRESHOLD,
-            self.config_entry.data.get(CONF_CHANGE_THRESHOLD, DEFAULT_CHANGE_THRESHOLD),
+            self._config_entry.data.get(CONF_CHANGE_THRESHOLD, DEFAULT_CHANGE_THRESHOLD),
         )
-        current_min_action_interval = self.config_entry.options.get(
+        current_min_action_interval = self._config_entry.options.get(
             CONF_MIN_ACTION_INTERVAL,
-            self.config_entry.data.get(CONF_MIN_ACTION_INTERVAL, DEFAULT_MIN_ACTION_INTERVAL),
+            self._config_entry.data.get(CONF_MIN_ACTION_INTERVAL, DEFAULT_MIN_ACTION_INTERVAL),
         )
-        current_sun_facing_tolerance = self.config_entry.options.get(
+        current_sun_facing_tolerance = self._config_entry.options.get(
             CONF_SUN_FACING_TOLERANCE,
-            self.config_entry.data.get(CONF_SUN_FACING_TOLERANCE, DEFAULT_SUN_FACING_TOLERANCE),
+            self._config_entry.data.get(CONF_SUN_FACING_TOLERANCE, DEFAULT_SUN_FACING_TOLERANCE),
         )
-        current_sun_altitude_threshold = self.config_entry.options.get(
+        current_sun_altitude_threshold = self._config_entry.options.get(
             CONF_SUN_ALTITUDE_THRESHOLD,
-            self.config_entry.data.get(CONF_SUN_ALTITUDE_THRESHOLD, DEFAULT_SUN_ALTITUDE_THRESHOLD),
+            self._config_entry.data.get(CONF_SUN_ALTITUDE_THRESHOLD, DEFAULT_SUN_ALTITUDE_THRESHOLD),
         )
 
         # Guess direction choice from azimuth
